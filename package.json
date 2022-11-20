@@ -7,14 +7,15 @@
   "dependencies": {
     "babel-jest": "^27.2.0",
     "chai": "^4.3.4",
-    "luxon": "^1.26.0"
+    "luxon": "^1.26.0",
+    "zod": "^3.19.1"
   },
   "engines": {
     "node": ">= 14"
   },
   "scripts": {
     "prettier": "npx prettier --write .",
-    "test": "jest app/"
+    "test": "jest src/"
   },
   "devDependencies": {
     "@babel/plugin-transform-modules-commonjs": "^7.15.4",
