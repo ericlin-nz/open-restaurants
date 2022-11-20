@@ -1,6 +1,6 @@
 import fs, { PathOrFileDescriptor } from 'fs';
 import { convert12HourTimeToSeconds } from '../utils/time';
-
+import { z } from 'zod';
 import {
   DAY_MAP,
   DAY_IN_SECONDS,
@@ -18,22 +18,23 @@ type RestaurantIntervals = {
   intervals: Interval[];
 };
 
-type RestaurantScheduleEntry = {
-  name: string;
-  openingHours: string;
-};
+const zRestaurantsDataSchema = z.strictObject({
+  restaurants: z.array(
+    z.strictObject({
+      name: z.string(),
+      opening_hours: z.string(),
+    })
+  ),
+})
 
-// Raw JSON format for the restaurant data
-type RestaurantScheduleData = {
-  restaurants: RestaurantScheduleEntry[];
-};
+type RestaurantsDataSchema = z.infer<typeof zRestaurantsDataSchema>;
 
 export class Schedule {
   private restaurantIntervals: RestaurantIntervals[];
 
   public constructor(jsonFileName: PathOrFileDescriptor) {
     this.restaurantIntervals = this.getFormattedSchedule(
-      JSON.parse(fs.readFileSync(jsonFileName).toString()),
+      zRestaurantsDataSchema.parse(JSON.parse(fs.readFileSync(jsonFileName).toString()))
     );
   }
 
@@ -42,11 +43,11 @@ export class Schedule {
   }
 
   protected getFormattedSchedule(
-    rawData: RestaurantScheduleData,
+    rawData: RestaurantsDataSchema,
   ): RestaurantIntervals[] {
     return rawData.restaurants.map((item) => {
-      const { name, openingHours: opening_hours } = item;
-      const intervals = this.getNormalisedIntervals(opening_hours);
+      const { name, opening_hours: openingHours } = item;
+      const intervals = this.getNormalisedIntervals(openingHours);
 
       return {
         name,
@@ -65,9 +66,13 @@ export class Schedule {
       const timeRegEx = /\b((1[0-2]|0?[1-9])(?::[0-5][0-9])? ([ap][m]))/g;
       const times = item.match(timeRegEx);
 
-      const timeInSeconds = times.map((time) => {
-        return convert12HourTimeToSeconds(time);
-      });
+      if (times === null || days === null) {
+        throw Error('No matches found');
+      }
+
+      const timeInSeconds = times.map((time) =>
+        convert12HourTimeToSeconds(time),
+      );
       const startTime = timeInSeconds[0];
       const endTime = timeInSeconds[1];
 
@@ -87,7 +92,7 @@ export class Schedule {
       );
 
       return accumulator.concat(intervals);
-    }, []);
+    }, [] as Interval[]);
   }
 
   protected createIntervals(
@@ -96,7 +101,7 @@ export class Schedule {
     startTime: number,
     endTime: number,
   ): Interval[] {
-    const intervals = [];
+    const intervals: Interval[] = [];
     let currentDay = startDay;
 
     while (true) {

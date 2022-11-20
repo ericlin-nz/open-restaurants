@@ -30,13 +30,15 @@ export class Restaurants {
     );
   }
 
-  protected getIntersections(input: number) {
-    return this.schedule.getRestaurantIntervals().reduce((accumulator, item) => {
-      return item.intervals.some((interval) => {
-        return input >= interval.start && input < interval.end;
-      })
-        ? accumulator.concat(item.name)
-        : accumulator;
-    }, []);
+  protected getIntersections(input: number): string[] {
+    return this.schedule
+      .getRestaurantIntervals()
+      .reduce((accumulator, item) => {
+        return item.intervals.some((interval) => {
+          return input >= interval.start && input < interval.end;
+        })
+          ? accumulator.concat(item.name)
+          : accumulator;
+      }, [] as string[]);
   }
 }

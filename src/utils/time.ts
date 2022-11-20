@@ -7,11 +7,8 @@ import {
 
 /**
  * Converts 12 hour time to seconds
- *
- * @param {string} time - In the format of hh:ss aaa', 'h:ss aaa' or 'h aaa'
- * @returns {int} time in seconds
  */
-export const convert12HourTimeToSeconds = (timeString: string) => {
+export function convert12HourTimeToSeconds(timeString: string): number {
   const timeParts = timeString.split(' '); // eg. ['12:34', 'am]
   const time = timeParts[0]; // eg. 12:34
   const meridiem = timeParts[1]; // eg. am
