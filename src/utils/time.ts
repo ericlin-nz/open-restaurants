@@ -41,4 +41,4 @@ export function convert12HourTimeToSeconds(timeString: string): number {
   }
 
   return seconds;
-};
+}

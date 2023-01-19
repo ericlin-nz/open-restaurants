@@ -23,9 +23,9 @@ const zRestaurantsDataSchema = z.strictObject({
     z.strictObject({
       name: z.string(),
       opening_hours: z.string(),
-    })
+    }),
   ),
-})
+});
 
 type RestaurantsDataSchema = z.infer<typeof zRestaurantsDataSchema>;
 
@@ -34,7 +34,9 @@ export class Schedule {
 
   constructor(jsonFileName: PathOrFileDescriptor) {
     this.restaurantIntervals = this.getFormattedSchedule(
-      zRestaurantsDataSchema.parse(JSON.parse(fs.readFileSync(jsonFileName).toString()))
+      zRestaurantsDataSchema.parse(
+        JSON.parse(fs.readFileSync(jsonFileName).toString()),
+      ),
     );
   }
 
