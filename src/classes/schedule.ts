@@ -32,31 +32,28 @@ type RestaurantsDataSchema = z.infer<typeof zRestaurantsDataSchema>;
 export class Schedule {
   private restaurantIntervals: RestaurantIntervals[];
 
-  public constructor(jsonFileName: PathOrFileDescriptor) {
+  constructor(jsonFileName: PathOrFileDescriptor) {
     this.restaurantIntervals = this.getFormattedSchedule(
       zRestaurantsDataSchema.parse(JSON.parse(fs.readFileSync(jsonFileName).toString()))
     );
   }
 
-  public getRestaurantIntervals() {
+  getRestaurantIntervals() {
     return this.restaurantIntervals;
   }
 
-  protected getFormattedSchedule(
+  private getFormattedSchedule(
     rawData: RestaurantsDataSchema,
   ): RestaurantIntervals[] {
     return rawData.restaurants.map((item) => {
       const { name, opening_hours: openingHours } = item;
       const intervals = this.getNormalisedIntervals(openingHours);
 
-      return {
-        name,
-        intervals,
-      };
+      return { name, intervals };
     });
   }
 
-  protected getNormalisedIntervals(rawOpeningHours: string): Interval[] {
+  private getNormalisedIntervals(rawOpeningHours: string): Interval[] {
     return rawOpeningHours.split('; ').reduce((accumulator, item) => {
       const daysRegEx = /(mon|tue|wed|thu|fri|sat|sun)/g;
       const days = item.toLowerCase().match(daysRegEx);
@@ -95,7 +92,7 @@ export class Schedule {
     }, [] as Interval[]);
   }
 
-  protected createIntervals(
+  private createIntervals(
     startDay: number,
     endDay: number,
     startTime: number,

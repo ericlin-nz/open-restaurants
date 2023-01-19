@@ -10,17 +10,17 @@ import { Schedule } from './schedule';
 export class Restaurants {
   private schedule: Schedule;
 
-  public constructor(jsonFilename: PathOrFileDescriptor) {
+  constructor(jsonFilename: PathOrFileDescriptor) {
     this.schedule = new Schedule(jsonFilename);
   }
 
-  public getRestaurantsOpenAt(input: DateTime) {
+  getRestaurantsOpenAt(input: DateTime) {
     const seconds = this.getInputAsSeconds(input);
 
     return this.getIntersections(seconds);
   }
 
-  protected getInputAsSeconds(input: DateTime) {
+  private getInputAsSeconds(input: DateTime) {
     const { weekday, hour, minute } = input;
 
     return (
@@ -30,7 +30,7 @@ export class Restaurants {
     );
   }
 
-  protected getIntersections(input: number): string[] {
+  private getIntersections(input: number): string[] {
     return this.schedule
       .getRestaurantIntervals()
       .reduce((accumulator, item) => {
