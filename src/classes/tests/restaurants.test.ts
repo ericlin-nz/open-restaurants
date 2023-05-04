@@ -1,14 +1,14 @@
 import { DateTime } from 'luxon';
-
+import { describe, beforeEach, it, expect } from "vitest";
 import { Restaurants } from '../restaurants';
 
-const restaurantDataFile = './restaurant_data.json';
+const RESTAURANT_DATA_FILE = './restaurant_data.json';
 
 describe('Restaurants class', function () {
   let restaurants: Restaurants;
 
   beforeEach(() => {
-    restaurants = new Restaurants(restaurantDataFile);
+    restaurants = new Restaurants(RESTAURANT_DATA_FILE);
   });
 
   // Helper function that returns the restaurants open on a specific weekday

@@ -2,7 +2,7 @@ import fs, { PathOrFileDescriptor } from 'fs';
 import { convert12HourTimeToSeconds } from '../utils/time';
 import { z } from 'zod';
 import {
-  DAY_MAP,
+  dayMapping,
   DAY_IN_SECONDS,
   MINUTE_IN_SECONDS,
   WEEK_IN_SECONDS,
@@ -80,8 +80,8 @@ export class Schedule {
 
       // Get the 0-based index of the start and end day so we know which
       // additional intervals to generate between them.
-      const startDayIndex = DAY_MAP[startDay];
-      const endDayIndex = DAY_MAP[endDay];
+      const startDayIndex = dayMapping[startDay];
+      const endDayIndex = dayMapping[endDay];
 
       const intervals = this.createIntervals(
         startDayIndex,
