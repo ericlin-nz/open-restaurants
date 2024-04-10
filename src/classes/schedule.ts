@@ -1,12 +1,11 @@
 import fs, { PathOrFileDescriptor } from 'fs';
-import { convert12HourTimeToSeconds } from '../utils/time';
-import { z } from 'zod';
 import {
-  dayMapping,
-  DAY_IN_SECONDS,
-  MINUTE_IN_SECONDS,
-  WEEK_IN_SECONDS,
-} from '../constants/datetime';
+  convert12HourTimeToSeconds,
+  days,
+  DAY_IN_MINUTES,
+  WEEK_IN_MINUTES,
+} from '../utils/time';
+import { z } from 'zod';
 
 export type Interval = {
   start: number;
@@ -18,7 +17,7 @@ type RestaurantIntervals = {
   intervals: Interval[];
 };
 
-const zRestaurantsDataSchema = z.strictObject({
+const restaurantsDataSchema = z.strictObject({
   restaurants: z.array(
     z.strictObject({
       name: z.string(),
@@ -27,20 +26,20 @@ const zRestaurantsDataSchema = z.strictObject({
   ),
 });
 
-type RestaurantsDataSchema = z.infer<typeof zRestaurantsDataSchema>;
+type RestaurantsDataSchema = z.infer<typeof restaurantsDataSchema>;
 
 export class Schedule {
   private restaurantIntervals: RestaurantIntervals[];
 
   constructor(jsonFileName: PathOrFileDescriptor) {
     this.restaurantIntervals = this.getFormattedSchedule(
-      zRestaurantsDataSchema.parse(
+      restaurantsDataSchema.parse(
         JSON.parse(fs.readFileSync(jsonFileName).toString()),
       ),
     );
   }
 
-  getRestaurantIntervals() {
+  getRestaurantIntervals(): RestaurantIntervals[] {
     return this.restaurantIntervals;
   }
 
@@ -58,14 +57,14 @@ export class Schedule {
   private getNormalisedIntervals(rawOpeningHours: string): Interval[] {
     return rawOpeningHours.split('; ').reduce((accumulator, item) => {
       const daysRegEx = /(mon|tue|wed|thu|fri|sat|sun)/g;
-      const days = item.toLowerCase().match(daysRegEx);
+      const openDays = item.toLowerCase().match(daysRegEx);
 
       // This regex matches times in the format: 'hh:ss aaa', 'h:ss aaa' and
       // 'h aaa'
       const timeRegEx = /\b((1[0-2]|0?[1-9])(?::[0-5][0-9])? ([ap][m]))/g;
       const times = item.match(timeRegEx);
 
-      if (times === null || days === null) {
+      if (times === null || openDays === null) {
         throw Error('No matches found');
       }
 
@@ -75,18 +74,18 @@ export class Schedule {
       const startTime = timeInSeconds[0];
       const endTime = timeInSeconds[1];
 
-      const startDay = days[0];
-      const endDay = days[1] ?? days[0];
+      const startDay = openDays[0];
+      const endDay = openDays[1] ?? openDays[0];
 
       // Get the 0-based index of the start and end day so we know which
       // additional intervals to generate between them.
-      const startDayIndex = dayMapping[startDay];
-      const endDayIndex = dayMapping[endDay];
+      const startDayIndex = days.indexOf(startDay);
+      const endDayIndex = days.indexOf(endDay);
 
       const intervals = this.createIntervals(
         startDayIndex,
-        endDayIndex,
         startTime,
+        endDayIndex,
         endTime,
       );
 
@@ -96,31 +95,31 @@ export class Schedule {
 
   private createIntervals(
     startDay: number,
-    endDay: number,
     startTime: number,
+    endDay: number,
     endTime: number,
   ): Interval[] {
     const intervals: Interval[] = [];
     let currentDay = startDay;
 
     while (true) {
-      const dayOffset = currentDay * DAY_IN_SECONDS;
+      const dayOffset = currentDay * DAY_IN_MINUTES;
 
       const startInterval = startTime + dayOffset;
       let endInterval = endTime + dayOffset;
 
-      if (endInterval - MINUTE_IN_SECONDS < startInterval) {
+      if (endInterval < startInterval) {
         // If end time is before start time, this means that this interval
         // flows over past this day over to the next.
-        endInterval += DAY_IN_SECONDS;
+        endInterval += DAY_IN_MINUTES;
       }
 
-      if (endInterval > WEEK_IN_SECONDS) {
+      if (endInterval > WEEK_IN_MINUTES) {
         // If the interval has moved past one week, adjust it back by a week to
         // keep it within the one week window.
         intervals.push({
-          start: startInterval - WEEK_IN_SECONDS,
-          end: endInterval - WEEK_IN_SECONDS,
+          start: startInterval - WEEK_IN_MINUTES,
+          end: endInterval - WEEK_IN_MINUTES,
         });
       } else {
         // Interval is within a one week period

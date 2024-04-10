@@ -1,10 +1,6 @@
 import { PathOrFileDescriptor } from 'fs';
 import { DateTime } from 'luxon';
-import {
-  DAY_IN_SECONDS,
-  HOUR_IN_SECONDS,
-  MINUTE_IN_SECONDS,
-} from '../constants/datetime';
+import { DAY_IN_MINUTES, HOUR_IN_MINUTES } from '../utils/time';
 import { Schedule } from './schedule';
 
 export class Restaurants {
@@ -14,20 +10,16 @@ export class Restaurants {
     this.schedule = new Schedule(jsonFilename);
   }
 
-  getRestaurantsOpenAt(input: DateTime) {
-    const seconds = this.getInputAsSeconds(input);
+  getRestaurantsOpenAt(input: DateTime): string[] {
+    const seconds = this.getInputAsMinutes(input);
 
     return this.getIntersections(seconds);
   }
 
-  private getInputAsSeconds(input: DateTime) {
+  private getInputAsMinutes(input: DateTime): number {
     const { weekday, hour, minute } = input;
 
-    return (
-      (weekday - 1) * DAY_IN_SECONDS +
-      hour * HOUR_IN_SECONDS +
-      minute * MINUTE_IN_SECONDS
-    );
+    return (weekday - 1) * DAY_IN_MINUTES + hour * HOUR_IN_MINUTES + minute;
   }
 
   private getIntersections(input: number): string[] {

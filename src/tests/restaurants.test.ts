@@ -1,6 +1,6 @@
 import { DateTime } from 'luxon';
-import { describe, beforeEach, it, expect } from "vitest";
-import { Restaurants } from '../restaurants';
+import { describe, beforeEach, it, expect } from 'vitest';
+import { Restaurants } from '../classes/restaurants';
 
 const RESTAURANT_DATA_FILE = './restaurant_data.json';
 

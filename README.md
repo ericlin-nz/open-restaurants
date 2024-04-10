@@ -16,8 +16,8 @@ To start and test this application, simply run the following commands in a termi
 ```
 git clone https://github.com/lin-eric/open-restaurants.git
 cd open-restaurants/
-npm install
-npm run test
+yarn
+yarn test
 ```
 
 # Details
@@ -29,7 +29,7 @@ This solution follows the following steps:
 ### Data Processing
 
 - Read the raw JSON data
-- Convert the opening times data into a format that can be easily used to run comparisons on. In this case, I used seconds since the start of Monday, 12:00 am.
+- Convert the opening times data into a format that can be easily used to run comparisons on. In this case, I used number of minutes since the start of Monday, 12:00 am.
 - Between each opening day, create an interval between, and including those days.
 - Within each interval, narrow that down to the start end and end times.
 - Store these intervals against each restaurant.
@@ -37,7 +37,7 @@ This solution follows the following steps:
 ### Input
 
 - The user specifies an input time
-- The time specified is converted into seconds to match the intervals set in the data processing step
+- The time specified is converted into minutes to match the intervals set in the data processing step
 - The application goes through each restaurant and each opening time and compares whether or not the specified time is between the start and end time of each interval.
 
 The two parts have been separated into two main classes:
