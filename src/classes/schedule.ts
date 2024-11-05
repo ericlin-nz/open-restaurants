@@ -98,46 +98,38 @@ export class Schedule {
     startTime: number,
     endDay: number,
     endTime: number,
+    intervals: Interval[] = []
   ): Interval[] {
-    const intervals: Interval[] = [];
-    let currentDay = startDay;
+    const dayOffset = startDay * DAY_IN_MINUTES;
 
-    while (true) {
-      const dayOffset = currentDay * DAY_IN_MINUTES;
+    const startInterval = startTime + dayOffset;
+    const endIntervalTime = endTime + dayOffset;
 
-      const startInterval = startTime + dayOffset;
-      let endInterval = endTime + dayOffset;
+    // If end time is before start time, this means that this interval
+    // flows over past this day over to the next.
+    const endInterval = endIntervalTime < startInterval
+      ? endIntervalTime + DAY_IN_MINUTES
+      : endIntervalTime;
 
-      if (endInterval < startInterval) {
-        // If end time is before start time, this means that this interval
-        // flows over past this day over to the next.
-        endInterval += DAY_IN_MINUTES;
-      }
-
-      if (endInterval > WEEK_IN_MINUTES) {
+    intervals.push(
+      endInterval > WEEK_IN_MINUTES 
+      ? {
         // If the interval has moved past one week, adjust it back by a week to
         // keep it within the one week window.
-        intervals.push({
-          start: startInterval - WEEK_IN_MINUTES,
-          end: endInterval - WEEK_IN_MINUTES,
-        });
-      } else {
+        start: startInterval - WEEK_IN_MINUTES,
+        end: endInterval - WEEK_IN_MINUTES,
+      } 
+      : {
         // Interval is within a one week period
-        intervals.push({
-          start: startInterval,
-          end: endInterval,
-        });
+        start: startInterval,
+        end: endInterval,
       }
+    );
 
-      if (currentDay === endDay) {
-        // All intervals accounted for!
-        break;
-      }
-
-      // Move the pointed day back to Monday if it's currently Sunday.
-      currentDay = (currentDay + 1) % 7;
+    if (startDay === endDay) {
+      return intervals;
     }
 
-    return intervals;
+    return this.createIntervals((startDay + 1) % 7, startTime, endDay, endTime, intervals);
   }
 }
